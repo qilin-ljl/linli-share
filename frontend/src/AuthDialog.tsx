@@ -1,7 +1,16 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Leaf, X } from 'lucide-react'
 
 export function AuthDialog({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
   return <div className="modal-backdrop auth-dialog-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) onClose() }}>
     <div className="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-dialog-title">
       <button className="auth-dialog-close" aria-label="关闭登录提示" onClick={onClose}><X size={18} /></button>
