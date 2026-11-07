@@ -1,0 +1,69 @@
+erDiagram
+    direction LR
+    COMMUNITIES ||--o{ COMMUNITY_MEMBERS : joins
+    USERS ||--o{ COMMUNITY_MEMBERS : belongs_to
+    COMMUNITIES ||--o{ BUILDINGS : contains
+    BUILDINGS ||--o{ ITEMS : locates
+    USERS ||--o{ ITEMS : publishes
+    USERS ||--o{ NEEDS : requests
+    COMMUNITIES ||--o{ NEEDS : hosts
+    NEEDS ||--o{ NEED_REPLIES : discussion
+    USERS ||--o{ NEED_REPLIES : responds
+    ITEMS |o--o{ NEED_REPLIES : attached_listing
+    ITEMS ||--o{ RESERVATIONS : appointment
+    USERS ||--o{ RESERVATIONS : buyer
+    ITEMS ||--o{ PRIVATE_MESSAGES : private_chat
+    USERS ||--o{ PRIVATE_MESSAGES : participates
+    ITEMS ||--o| TRANSACTIONS : completion
+    USERS ||--o{ TRANSACTIONS : recipient
+
+    COMMUNITIES {
+      int id PK
+      string name
+    }
+    COMMUNITY_MEMBERS {
+      int community_id FK
+      int user_id FK
+    }
+    BUILDINGS {
+      int id PK
+      int community_id FK
+    }
+    USERS {
+      int id PK
+      string display_name
+    }
+    ITEMS {
+      int id PK
+      int owner_id FK
+      int building_id FK
+      string status
+    }
+    NEEDS {
+      int id PK
+      int community_id FK
+      int user_id FK
+    }
+    NEED_REPLIES {
+      int id PK
+      int need_id FK
+      int item_id FK
+    }
+    RESERVATIONS {
+      int id PK
+      int item_id FK
+      int buyer_id FK
+      string status
+    }
+    PRIVATE_MESSAGES {
+      int id PK
+      int item_id FK
+      int sender_id FK
+      int recipient_id FK
+      bool is_ai
+    }
+    TRANSACTIONS {
+      int id PK
+      int item_id FK
+      int recipient_id FK
+    }

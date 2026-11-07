@@ -1,0 +1,190 @@
+erDiagram
+    direction LR
+    COMMUNITIES ||--|| COMMUNITY_PROFILES : config
+    COMMUNITIES ||--o{ BUILDINGS : contains
+    COMMUNITIES ||--o{ COMMUNITY_MEMBERS : has
+    COMMUNITIES ||--o{ NEEDS : hosts
+    COMMUNITIES ||--o{ BATCH_PUBLISHES : batches
+    COMMUNITIES ||--o{ UPLOADED_IMAGES : stores
+    BUILDINGS ||--o{ ITEMS : locates
+    BUILDINGS |o--o{ NEEDS : locates
+    USERS ||--o{ COMMUNITY_MEMBERS : joins
+    USERS ||--o| USER_PREFERENCES : chooses
+    USERS ||--o{ AUTH_SESSIONS : signs_in
+    USERS ||--o| USER_PRESENCE : heartbeat
+    USERS ||--o{ ITEMS : publishes
+    USERS ||--o{ NEEDS : requests
+    USERS ||--o{ NEED_REPLIES : replies
+    USERS ||--o{ INTERESTS : wants
+    USERS ||--o{ PRIVATE_MESSAGES : sends
+    USERS ||--o{ TRANSACTIONS : receives
+    ITEMS ||--o{ HANDOVER_SLOTS : offers
+    ITEMS ||--o{ RESERVATIONS : books
+    ITEMS ||--o{ PRIVATE_MESSAGES : conversation
+    ITEMS ||--o{ COMMENTS : public_comments
+    ITEMS ||--o{ INTERESTS : interest
+    ITEMS ||--o{ ITEM_EVENTS : lifecycle
+    ITEMS ||--o{ ITEM_VIEWS : observes
+    ITEMS ||--o| TRANSACTIONS : completes
+    ITEMS ||--o{ NEED_MATCHES : matches
+    ITEMS |o--o{ NEED_REPLIES : attached_listing
+    ITEM_PASSPORTS ||--o{ ITEMS : continues
+    BATCH_PUBLISHES ||--o{ ITEMS : contains
+    HANDOVER_SLOTS ||--o{ RESERVATIONS : selected
+    NEEDS ||--o{ NEED_MATCHES : candidates
+    NEEDS ||--o{ NEED_REPLIES : discussion
+
+    COMMUNITIES {
+      int id PK
+      string name UK
+    }
+    COMMUNITY_PROFILES {
+      int id PK
+      int community_id FK
+      string kind
+      string join_code UK
+      bool is_public
+    }
+    BUILDINGS {
+      int id PK
+      int community_id FK
+      string name
+      float map_x
+      float map_y
+    }
+    COMMUNITY_MEMBERS {
+      int id PK
+      int community_id FK
+      int user_id FK
+      int building_id FK
+      string role
+    }
+    USERS {
+      int id PK
+      string email UK
+      string display_name
+      int building_id FK
+      int community_id FK
+    }
+    USER_PREFERENCES {
+      int id PK
+      int user_id FK
+      json categories
+      json trade_preferences
+      bool use_distance
+    }
+    AUTH_SESSIONS {
+      int id PK
+      int user_id FK
+      string jti UK
+      datetime expires_at
+    }
+    USER_PRESENCE {
+      int user_id PK,FK
+      datetime last_seen_at
+    }
+    ITEMS {
+      int id PK
+      int owner_id FK
+      int building_id FK
+      int passport_id FK
+      int batch_id FK
+      string title
+      string category
+      string trade_type
+      string status
+      datetime last_confirmed_at
+    }
+    BATCH_PUBLISHES {
+      int id PK
+      int user_id FK
+      int community_id FK
+      datetime confirmed_at
+    }
+    UPLOADED_IMAGES {
+      int id PK
+      int owner_id FK
+      int community_id FK
+      string mime_type
+    }
+    HANDOVER_SLOTS {
+      int id PK
+      int item_id FK
+      datetime starts_at
+      datetime ends_at
+    }
+    RESERVATIONS {
+      int id PK
+      int item_id FK
+      int buyer_id FK
+      int seller_id FK
+      int slot_id FK
+      string status
+      string handover_status
+      string pickup_code
+    }
+    PRIVATE_MESSAGES {
+      int id PK
+      int item_id FK
+      int sender_id FK
+      int recipient_id FK
+      string message_type
+      bool is_ai
+      datetime read_at
+    }
+    COMMENTS {
+      int id PK
+      int item_id FK
+      int user_id FK
+      string body
+    }
+    INTERESTS {
+      int id PK
+      int item_id FK
+      int user_id FK
+    }
+    ITEM_EVENTS {
+      int id PK
+      int item_id FK
+      int user_id FK
+      string event_type
+      json metadata
+    }
+    ITEM_VIEWS {
+      int id PK
+      int item_id FK
+      int user_id FK
+    }
+    TRANSACTIONS {
+      int id PK
+      int item_id FK
+      int recipient_id FK
+      datetime completed_at
+    }
+    NEEDS {
+      int id PK
+      int user_id FK
+      int community_id FK
+      int building_id FK
+      string raw_text
+      json keywords
+      string status
+    }
+    NEED_MATCHES {
+      int id PK
+      int need_id FK
+      int item_id FK
+      json reasons
+    }
+    NEED_REPLIES {
+      int id PK
+      int need_id FK
+      int user_id FK
+      int item_id FK
+      string body
+    }
+    ITEM_PASSPORTS {
+      int id PK
+      int root_item_id
+      string passport_code UK
+    }
