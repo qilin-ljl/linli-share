@@ -395,6 +395,34 @@ def test_offline_ai_faq_and_private_reservation_messages(client, monkeypatch):
     assert any("预约已确认" in row["body"] for row in client.get(f"{path}/messages?other_user_id=1", headers=as_user(2)).json())
 
 
+def test_expired_need_is_excluded_from_item_matching_needs(client, monkeypatch):
+    item = client.post("/api/items", json={"title": "闲置书架", "description": "书架结实，楼下自提",
+        "category": "家居", "condition": "八成新", "trade_type": "FREE", "building_id": 1}, headers=as_user(1)).json()
+    assert item.get("id"), item
+    deadline_soon = datetime.now(timezone.utc) + timedelta(days=1)
+    deadline_later = datetime.now(timezone.utc) + timedelta(days=3)
+    need_soon = client.post("/api/needs", json={"raw_text": "想找一张书架", "category": "家居",
+        "keywords": ["书架"], "expires_at": deadline_soon.isoformat()}, headers=as_user(2)).json()
+    need_later = client.post("/api/needs", json={"raw_text": "需要放书的架子", "category": "家居",
+        "keywords": ["书架"], "expires_at": deadline_later.isoformat()}, headers=as_user(3)).json()
+    for created in (need_soon, need_later):
+        assert created.get("id"), created
+    path = f"/api/items/{item['id']}/matching-needs"
+    initial = client.get(path, headers=as_user(1)).json()
+    matched_ids = {entry["need_id"] for entry in initial["matches"]}
+    assert need_soon["id"] in matched_ids and need_later["id"] in matched_ids
+
+    between = deadline_soon + timedelta(hours=1)
+    assert between < deadline_later
+    monkeypatch.setattr(main, "utc_now", lambda: between)
+    after = client.get(path, headers=as_user(1)).json()
+    remaining = {entry["need_id"] for entry in after["matches"]}
+    assert need_soon["id"] not in remaining
+    assert need_later["id"] in remaining
+    later_entry = next(entry for entry in after["matches"] if entry["need_id"] == need_later["id"])
+    assert later_entry["reasons"]
+
+
 def test_need_discussion_only_attaches_own_active_item(client):
     item = client.post("/api/items", json={"title": "可分享的书桌", "description": "书桌稳固，楼下自提",
         "category": "家居", "condition": "八成新", "trade_type": "FREE", "building_id": 1}, headers=as_user(1)).json()

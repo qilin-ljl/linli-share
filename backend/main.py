@@ -1650,12 +1650,14 @@ def item_matching_needs(item_id: int, session: Session = Depends(get_session),
     item = get_item_or_404(session, item_id, community_id)
     if item.status in {"COMPLETED", "ARCHIVED"}:
         return {"count": 0, "budget_count": 0, "matches": []}
+    now = utc_now()
     rows = session.exec(select(NeedMatch, Need).join(Need, Need.id == NeedMatch.need_id)
-                        .where(NeedMatch.item_id == item.id)).all()
-    active = [(match, need) for match, need in rows if need_is_active(need, utc_now())]
-    return {"count": len(active), "budget_count": sum(need.budget_max is not None for _, need in active),
+                        .where(NeedMatch.item_id == item.id,
+                               Need.status == "ACTIVE",
+                               (Need.expires_at.is_(None)) | (Need.expires_at > now))).all()
+    return {"count": len(rows), "budget_count": sum(need.budget_max is not None for _, need in rows),
             "matches": [{"need_id": need.id, "summary": need.raw_text[:100], "reasons": match.reasons,
-                         "budget_max": need.budget_max} for match, need in active[:8]]}
+                         "budget_max": need.budget_max} for match, need in rows[:8]]}
 
 
 @app.get("/api/passports/{code}")
