@@ -117,6 +117,7 @@ npm run lint
 | `VISION_API_KEY` | 可选视觉服务 Key；留空时复用 `DEEPSEEK_API_KEY` |
 | `VISION_BASE_URL` | 可选 OpenAI 兼容视觉服务地址；默认 DeepSeek 官方接口 |
 | `VISION_MODEL` | 可选视觉模型；默认 `deepseek-flash` |
+| `VISION_MAX_RETRIES` | 视觉请求失败重试次数；默认 `1` |
 | `CORS_ORIGINS` | 允许访问 API 的前端来源，逗号分隔 |
 | `VITE_API_URL` | 前端构建时的后端 API 根地址 |
 | `JWT_SECRET_KEY` | JWT 签名密钥；生产环境必须配置固定、随机的密钥 |
