@@ -2,7 +2,9 @@
 
 from datetime import datetime, timezone
 
+from database import utc_now
 from models import Item, Need
+from sqlmodel import Session, select
 
 
 def need_is_active(need: Need, now: datetime) -> bool:
@@ -12,7 +14,15 @@ def need_is_active(need: Need, now: datetime) -> bool:
     return need.status == "ACTIVE" and (expires is None or expires > now)
 
 
+def active_needs(session: Session, now: datetime) -> list[Need]:
+    '''Return needs that are active and not expired.'''
+    return [need for need in session.exec(select(Need).where(Need.status == "ACTIVE")).all()
+            if need_is_active(need, now)]
+
+
 def match_need(item: Item, need: Need) -> list[str]:
+    if not need_is_active(need, utc_now()):
+        return []
     if item.owner_id == need.user_id:
         return []
     title = f"{item.title} {item.description}".lower()
