@@ -24,7 +24,7 @@ def _vision_json(prompt: str, images: list[tuple[bytes, str]]) -> dict:
     if not key or not model:
         raise RuntimeError("Vision API is not configured")
     client = OpenAI(api_key=key, base_url=os.getenv("VISION_BASE_URL") or "https://api.deepseek.com",
-                    timeout=40.0, max_retries=0)
+                    timeout=40.0, max_retries=int(os.getenv("VISION_MAX_RETRIES", "1")))
     content = [{"type": "text", "text": prompt}]
     for image, mime_type in images:
         image, mime_type = _prepared_image(image)
